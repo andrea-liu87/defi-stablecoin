@@ -6,17 +6,15 @@ import {Script} from "forge-std/Script.sol";
 import {DecentralizedStablecoin} from "../src/DecentralizedStablecoin.sol";
 import {DSCEngine} from "../src/DSCEngine.sol";
 import {HelperConfig} from "../script/HelperConfig.s.sol";
- 
- contract DeployDecentralizedStablecoin is Script {
+
+contract DeployDecentralizedStablecoin is Script {
     address[] tokenAddress;
     address[] pricefeedAddress;
 
-    function run() external returns(DecentralizedStablecoin, DSCEngine, HelperConfig) {
+    function run() external returns (DecentralizedStablecoin, DSCEngine, HelperConfig) {
         HelperConfig helperconfig = new HelperConfig();
-        (address priceFeedwBtc,
-        address priceFeedwETH,
-        address wBTC,
-        address wETH, uint256 deployerKey) = helperconfig.activeNetworkConfig();
+        (address priceFeedwBtc, address priceFeedwETH, address wBTC, address wETH, uint256 deployerKey) =
+            helperconfig.activeNetworkConfig();
 
         tokenAddress = [wBTC, wETH];
         pricefeedAddress = [priceFeedwBtc, priceFeedwETH];
@@ -28,4 +26,4 @@ import {HelperConfig} from "../script/HelperConfig.s.sol";
         vm.stopBroadcast();
         return (decentralizedStablecoin, dscEngine, helperconfig);
     }
- }
+}

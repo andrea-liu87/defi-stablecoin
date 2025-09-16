@@ -9,50 +9,50 @@ import {DSCEngine} from "../src/DSCEngine.sol";
 import {HelperConfig} from "../script/HelperConfig.s.sol";
 
 contract DSCTest is Test {
-     DeployDecentralizedStablecoin public deployer;
-     DecentralizedStablecoin public dscContract;
-     DSCEngine public dscengine;
+    DeployDecentralizedStablecoin public deployer;
+    DecentralizedStablecoin public dscContract;
+    DSCEngine public dscengine;
     HelperConfig public config;
 
-     address public USER = makeAddr("user");
+    address public USER = makeAddr("user");
 
-     function setUp() public {
-          deployer = new DeployDecentralizedStablecoin();
-          (dscContract, dscengine, config) = deployer.run();
-     }
+    function setUp() public {
+        deployer = new DeployDecentralizedStablecoin();
+        (dscContract, dscengine, config) = deployer.run();
+    }
 
-     function testName() public {
-          string memory name = "DecentralizedStablecoin";
-          
-          assert(keccak256(abi.encodePacked(dscContract.name())) ==  keccak256(abi.encodePacked(name)));
-     }
+    function testName() public {
+        string memory name = "DecentralizedStablecoin";
 
-//      function testIfAmountIsZeroCantBurn() public {
-//           address owner = msg.sender;
-//           vm.prank(owner);
+        assert(keccak256(abi.encodePacked(dscContract.name())) == keccak256(abi.encodePacked(name)));
+    }
 
-//           vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMustNotBe0.selector);
-//           dscContract.burn(0);
-//      }
+    //      function testIfAmountIsZeroCantBurn() public {
+    //           address owner = msg.sender;
+    //           vm.prank(owner);
 
-//      function testAmountToBurnShouldNotLessThanBalance() public {
-//         address owner = msg.sender;
-//         vm.prank(owner);
-       
-//         dscContract.mint(USER, 100);
+    //           vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMustNotBe0.selector);
+    //           dscContract.burn(0);
+    //      }
 
-//         vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMoreThanBalance.selector);
-//         //vm.prank(owner);
-//         dscContract.burn(101);
-//     }
+    //      function testAmountToBurnShouldNotLessThanBalance() public {
+    //         address owner = msg.sender;
+    //         vm.prank(owner);
 
-//      function testCanMintAndHaveBalance() public {
-//         address owner = msg.sender;
-//         vm.prank(owner);
-       
-//         bool tokenId = dscContract.mint(USER, 1);
+    //         dscContract.mint(USER, 100);
 
-//         assert(dscContract.balanceOf(USER) == 1);
-//         assert(tokenId == true);
-//     }
+    //         vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMoreThanBalance.selector);
+    //         //vm.prank(owner);
+    //         dscContract.burn(101);
+    //     }
+
+    //      function testCanMintAndHaveBalance() public {
+    //         address owner = msg.sender;
+    //         vm.prank(owner);
+
+    //         bool tokenId = dscContract.mint(USER, 1);
+
+    //         assert(dscContract.balanceOf(USER) == 1);
+    //         assert(tokenId == true);
+    //     }
 }
