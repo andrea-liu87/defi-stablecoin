@@ -27,6 +27,7 @@ import {DecentralizedStablecoin} from "../src/DecentralizedStablecoin.sol";
 import {ReentrancyGuard} from "openzeppelin-contracts/contracts/utils/ReentrancyGuard.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from "chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
+import {console} from "../lib/forge-std/src/console.sol";
 
 /**
  * @title DSCEngine
@@ -72,6 +73,7 @@ contract DSCEngine is ReentrancyGuard {
 
     uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
     uint256 private constant PRECISION = 1e18;
+    uint256 private constant MIN_HEALTH_FACTOR = 1e18;
     uint256 private constant HEALTHFACTOR_THRESHOLD = 50; //200% COLLATERAL VALUE
     uint256 private constant HEALTHFACTOR_PRECISION = 100;
     uint256 private constant LIQUIDATION_BONUS = 10;
@@ -173,8 +175,9 @@ contract DSCEngine is ReentrancyGuard {
         address collateralTokenAddress,
         uint256 amountToBeRedeem
     ) external {
-        burnDsc(dscAmount);
-        redeemCollateral(collateralTokenAddress, amountToBeRedeem);
+        _burnDsc(dscAmount, msg.sender, msg.sender);
+        _redeemCollateral(collateralTokenAddress, amountToBeRedeem, msg.sender, msg.sender);
+        _revertIfHealthFactorTooLow(msg.sender);
     }
 
     function redeemCollateral(
@@ -200,7 +203,7 @@ contract DSCEngine is ReentrancyGuard {
         }
     }
 
-    function burnDsc(uint256 amount) public mustMoreThanZero(amount) {
+    function burnDsc(uint256 amount) external mustMoreThanZero(amount) {
         _burnDsc(amount, msg.sender, msg.sender);
         _revertIfHealthFactorTooLow(msg.sender);
     }
@@ -223,7 +226,7 @@ contract DSCEngine is ReentrancyGuard {
     function liquidate(address collateral, address user, uint256 debtToCover) 
     external mustMoreThanZero(debtToCover) nonReentrant{
         uint256 healthFactor = _getHealthFactor(user);
-        if(healthFactor >= 1){
+        if(healthFactor >= MIN_HEALTH_FACTOR){
             revert DSCEngine_HealthFactorOkay();
         }
         uint256 tokenAmountFromDebtCovered = getTokenAmountFromUSD(collateral, debtToCover);
@@ -239,14 +242,12 @@ contract DSCEngine is ReentrancyGuard {
         _revertIfHealthFactorTooLow(msg.sender);
     }
 
-    function getHealthFactor() external view {}
-
     ////////////////////////////////////////
     /// Private & Internal Function ////////
     ///////////////////////////////////////
     function _revertIfHealthFactorTooLow(address user) internal view {
         uint256 healthFactor = _getHealthFactor(user);
-        if (healthFactor < 1) {
+        if (healthFactor < MIN_HEALTH_FACTOR) {
             revert DSCEngine__BreakHealthFactor(healthFactor);
         }
     }
@@ -263,6 +264,8 @@ contract DSCEngine is ReentrancyGuard {
             uint256 totalCollateralValue,
             uint256 dscAmount
         ) = _getAccountInformation(user);
+        if (dscAmount == 0) return type(uint256).max;
+        //10e18*0.5* 1e18 / 2e20 = 
         uint256 collateralValueAdjusted = (totalCollateralValue *
             HEALTHFACTOR_THRESHOLD) / HEALTHFACTOR_PRECISION;
         uint256 healthFactor = (collateralValueAdjusted * PRECISION) /
@@ -280,7 +283,7 @@ contract DSCEngine is ReentrancyGuard {
         address user
     ) private view returns (uint256 totalCollateralValue, uint256 dscAmount) {
         dscAmount = s_dsc[user];
-        totalCollateralValue = getTotalCollateralValue(user);
+        totalCollateralValue = getTotalCollateralValueInUSD(user);
         return (totalCollateralValue, dscAmount);
     }
 
@@ -289,7 +292,7 @@ contract DSCEngine is ReentrancyGuard {
         uint256 amountToBeRedeem,
         address from,
         address to
-    ) public mustMoreThanZero(amountToBeRedeem) nonReentrant {
+    ) private {
         s_collateralDeposit[from][
             collateralTokenAddress
         ] -= amountToBeRedeem;
@@ -310,7 +313,7 @@ contract DSCEngine is ReentrancyGuard {
      * @dev low level function. Not to called bofere checking Health Factor
      * @param amount Amount DSC tobe burnt
      */
-    function _burnDsc(uint256 amount, address onBehalf, address dscFrom) public mustMoreThanZero(amount) {
+    function _burnDsc(uint256 amount, address onBehalf, address dscFrom) private {
         s_dsc[onBehalf] -= amount;
         bool success = i_dsc.transferFrom(dscFrom, address(this), amount);
         if (!success) {
@@ -329,7 +332,7 @@ contract DSCEngine is ReentrancyGuard {
         return amount/(uint256(priceFeed)*ADDITIONAL_FEED_PRECISION)*PRECISION;
     }
 
-    function getTotalCollateralValue(
+    function getTotalCollateralValueInUSD(
         address user
     ) public view returns (uint256 totalValueInUsd) {
         for (uint256 i = 0; i < s_collateralTokens.length; i++) {
@@ -352,7 +355,44 @@ contract DSCEngine is ReentrancyGuard {
             PRECISION;
     }
 
+    ///////////////////////
+    ////// GETTER ////////
+    //////////////////////
+
     function getAccountInformation(address user) public returns(uint256 totalCollateralValue, uint256 dscAmount) {
         return _getAccountInformation(user);
     }
+
+    function getCollateralBalanceOfUser(address user, address token) external view returns (uint256) {
+        return s_collateralDeposit[user][token];
+    }
+
+     function getHealthFactor(address user) external view returns(uint256){
+        return _getHealthFactor(user);
+    }
+
+        function getPrecision() external pure returns (uint256) {
+        return PRECISION;
+    }
+
+    function getAdditionalFeedPrecision() external pure returns (uint256) {
+        return ADDITIONAL_FEED_PRECISION;
+    }
+
+    function getLiquidationThreshold() external pure returns (uint256) {
+        return HEALTHFACTOR_THRESHOLD;
+    }
+
+    function getLiquidationBonus() external pure returns (uint256) {
+        return LIQUIDATION_BONUS;
+    }
+
+    function getLiquidationPrecision() external pure returns (uint256) {
+        return LIQUIDATION_PRECISION;
+    }
+
+    function getMinHealthFactor() external pure returns (uint256) {
+        return MIN_HEALTH_FACTOR;
+    }
+
 }
