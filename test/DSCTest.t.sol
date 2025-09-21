@@ -28,31 +28,31 @@ contract DSCTest is StdCheats, Test {
         assert(keccak256(abi.encodePacked(dscContract.name())) == keccak256(abi.encodePacked(name)));
     }
 
-         function testIfAmountIsZeroCantBurn() public {
-              vm.prank(dscContract.owner());
+    function testIfAmountIsZeroCantBurn() public {
+        vm.prank(dscContract.owner());
 
-              vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMustNotBe0.selector);
-              dscContract.burn(0);
-         }
+        vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMustNotBe0.selector);
+        dscContract.burn(0);
+    }
 
-         function testAmountToBurnShouldNotLessThanBalance() public {
-            address owner = dscContract.owner();
-            vm.startPrank(owner);
+    function testAmountToBurnShouldNotLessThanBalance() public {
+        address owner = dscContract.owner();
+        vm.startPrank(owner);
 
-            dscContract.mint(USER, 100);
+        dscContract.mint(USER, 100);
 
-            vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMoreThanBalance.selector);
-            dscContract.burn(101);
-            vm.stopPrank();
-        }
+        vm.expectRevert(DecentralizedStablecoin.DecentralizedStablecoin_AmountMoreThanBalance.selector);
+        dscContract.burn(101);
+        vm.stopPrank();
+    }
 
-         function testCanMintAndHaveBalance() public {
-            address owner = dscContract.owner();
-            vm.prank(owner);
+    function testCanMintAndHaveBalance() public {
+        address owner = dscContract.owner();
+        vm.prank(owner);
 
-            bool tokenId = dscContract.mint(USER, 1);
+        bool tokenId = dscContract.mint(USER, 1);
 
-            assert(dscContract.balanceOf(USER) == 1);
-            assert(tokenId == true);
-        }
+        assert(dscContract.balanceOf(USER) == 1);
+        assert(tokenId == true);
+    }
 }

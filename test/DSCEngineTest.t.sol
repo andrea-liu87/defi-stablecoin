@@ -31,7 +31,7 @@ contract DSCEngineTest is Test {
 
     int256 public constant ETH_USD_PRICE = 2000e8;
 
-     // Liquidation
+    // Liquidation
     address public liquidator = makeAddr("liquidator");
     uint256 public collateralToCover = 20 ether;
 
@@ -50,6 +50,7 @@ contract DSCEngineTest is Test {
     ///////////////////////////////
     address[] tokenAddresses;
     address[] priceFeedAddresses;
+
     function testRevertIfPriceFeedAndTokenAddressLengthNotSame() public {
         tokenAddresses.push(weth);
         priceFeedAddresses.push(ethUsdPriceFeed);
@@ -74,10 +75,9 @@ contract DSCEngineTest is Test {
     function testGetTokenAmountFromUSD() public {
         uint256 usdAmount = 100;
         uint256 ETH_USD_PRICE = 2000e8;
-        uint256 expectedWeth = usdAmount/ETH_USD_PRICE;
+        uint256 expectedWeth = usdAmount / ETH_USD_PRICE;
         uint256 actualWeth = dscengine.getTokenAmountFromUSD(weth, usdAmount);
         assertEq(expectedWeth, actualWeth);
-
     }
 
     ///////////////////////////////
@@ -94,7 +94,7 @@ contract DSCEngineTest is Test {
     }
 
     function testRevertWithUnapprovedTokenCollateral() public {
-        ERC20Mock ranToken = new ERC20Mock("RAN",  "RAN", USER, AMOUNT_COLLATERAL);
+        ERC20Mock ranToken = new ERC20Mock("RAN", "RAN", USER, AMOUNT_COLLATERAL);
 
         vm.startPrank(USER);
         vm.expectRevert(DSCEngine.DSCEngine__TokenIsNotAllowed.selector);
@@ -125,7 +125,7 @@ contract DSCEngineTest is Test {
     ///////////////////////////////
     /// REDEEM COLLATERAL TEST ///
     ///////////////////////////////
-    function testRevertsIfRedeemAmountIsZero() public depositedCollateral{
+    function testRevertsIfRedeemAmountIsZero() public depositedCollateral {
         vm.startPrank(USER);
         vm.expectRevert(DSCEngine.DSCEngine__MustBeMoreThanZero.selector);
         dscengine.redeemCollateral(weth, 0);
@@ -153,7 +153,7 @@ contract DSCEngineTest is Test {
     ///////////////////////////////
     /// MINT DSC TEST /////////////
     ///////////////////////////////
-    function testDSCBalanceAfterMinted() public depositedCollateral{
+    function testDSCBalanceAfterMinted() public depositedCollateral {
         vm.startPrank(USER);
         dscengine.mintDsc(amountToMint);
         (, uint256 dscAmount) = dscengine.getAccountInformation(USER);
@@ -172,7 +172,7 @@ contract DSCEngineTest is Test {
         mockdsc.transferOwnership(address(mockdscengine));
 
         ERC20Mock(weth).mint(USER, STARTING_ERC20_BALANCE);
-        
+
         ERC20Mock(weth).approve(address(mockdscengine), AMOUNT_COLLATERAL);
 
         vm.expectRevert(DSCEngine.DSCEngine__MintingIsFailed.selector);
@@ -238,7 +238,6 @@ contract DSCEngineTest is Test {
         uint256 healthFactor = dscengine.getHealthFactor(USER);
         console.log("USER Health Factor: ", healthFactor);
 
-
         // setup liquidator account
         ERC20Mock(weth).mint(liquidator, collateralToCover);
 
@@ -248,20 +247,20 @@ contract DSCEngineTest is Test {
 
         uint256 liquidatorTokenBalanceInitial = ERC20Mock(weth).balanceOf(liquidator);
         uint256 dsceTokenBalanceInitial = ERC20Mock(weth).balanceOf(address(dscengine));
-        
+
         dsc.approve(address(dscengine), amountToMint);
         dscengine.liquidate(weth, USER, amountToMint);
 
-       uint256 liquidatorTokenBalance = ERC20Mock(weth).balanceOf(liquidator);
+        uint256 liquidatorTokenBalance = ERC20Mock(weth).balanceOf(liquidator);
         uint256 dsceTokenBalance = ERC20Mock(weth).balanceOf(address(dscengine));
 
         uint256 tokenAmountFromDebtCovered = dscengine.getTokenAmountFromUSD(address(weth), amountToMint);
         uint256 LIQUIDATION_BONUS = dscengine.getLiquidationBonus();
         uint256 LIQUIDATION_PRECISION = dscengine.getLiquidationPrecision();
-        uint256 liquidationBonus = tokenAmountFromDebtCovered*LIQUIDATION_BONUS/LIQUIDATION_PRECISION;
-        uint256 expectedPayout = tokenAmountFromDebtCovered+liquidationBonus;
-        
-        assertEq (liquidatorTokenBalance, expectedPayout);
+        uint256 liquidationBonus = tokenAmountFromDebtCovered * LIQUIDATION_BONUS / LIQUIDATION_PRECISION;
+        uint256 expectedPayout = tokenAmountFromDebtCovered + liquidationBonus;
+
+        assertEq(liquidatorTokenBalance, expectedPayout);
         vm.stopPrank();
     }
 }
