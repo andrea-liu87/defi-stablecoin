@@ -3,14 +3,14 @@
 pragma solidity ^0.8.19;
 
 import {Test, console} from "forge-std/Test.sol";
-import {DeployDecentralizedStablecoin} from "../script/DeployDecentralizedStablecoin.s.sol";
-import {DecentralizedStablecoin} from "../src/DecentralizedStablecoin.sol";
-import {DSCEngine} from "../src/DSCEngine.sol";
-import {HelperConfig} from "../script/HelperConfig.s.sol";
-import {ERC20Mock} from "../test/mocks/ERC20Mock.sol";
+import {DeployDecentralizedStablecoin} from "../../script/DeployDecentralizedStablecoin.s.sol";
+import {DecentralizedStablecoin} from "../../src/DecentralizedStablecoin.sol";
+import {DSCEngine} from "../../src/DSCEngine.sol";
+import {HelperConfig} from "../../script/HelperConfig.s.sol";
+import {ERC20Mock} from "../../test/mocks/ERC20Mock.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {MockFailedMintDSC} from "../test/mocks/MockFailedMintDSC.sol";
-import {MockV3Aggregator} from "../test/mocks/MockV3Aggregator.sol";
+import {MockFailedMintDSC} from "../../test/mocks/MockFailedMintDSC.sol";
+import {MockV3Aggregator} from "../../test/mocks/MockV3Aggregator.sol";
 
 contract DSCEngineTest is Test {
     DeployDecentralizedStablecoin deployer;

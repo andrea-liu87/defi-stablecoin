@@ -242,10 +242,7 @@ contract DSCEngine is ReentrancyGuard {
      */
     function _getHealthFactor(address user) private view returns (uint256) {
         (uint256 totalCollateralValue, uint256 dscAmount) = _getAccountInformation(user);
-        if (dscAmount == 0) return type(uint256).max;
-        //10e18*0.5* 1e18 / 2e20 =
-        uint256 collateralValueAdjusted = (totalCollateralValue * HEALTHFACTOR_THRESHOLD) / HEALTHFACTOR_PRECISION;
-        uint256 healthFactor = (collateralValueAdjusted * PRECISION) / dscAmount;
+        uint256 healthFactor = _calculateHealthFactor(totalCollateralValue, dscAmount);
         return healthFactor;
     }
 
@@ -287,6 +284,13 @@ contract DSCEngine is ReentrancyGuard {
             revert DSCEngine__TransferFailed();
         }
         i_dsc.burn(amount);
+    }
+
+    function _calculateHealthFactor(uint256 totalCollateralValue, uint256 dscAmount) internal pure returns(uint256) {
+        if (dscAmount == 0) return type(uint256).max;
+        uint256 collateralValueAdjusted = (totalCollateralValue * HEALTHFACTOR_THRESHOLD) / HEALTHFACTOR_PRECISION;
+        uint256 healthFactor = (collateralValueAdjusted * PRECISION) / dscAmount;
+        return healthFactor;
     }
 
     ////////////////////////////////////////
@@ -349,5 +353,9 @@ contract DSCEngine is ReentrancyGuard {
 
     function getMinHealthFactor() external pure returns (uint256) {
         return MIN_HEALTH_FACTOR;
+    }
+
+    function getCollateralToken() external view returns (address[] memory) {
+        return s_collateralTokens;
     }
 }
