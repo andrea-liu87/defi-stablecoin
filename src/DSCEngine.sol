@@ -29,7 +29,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from
     "chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {console} from "../lib/forge-std/src/console.sol";
-import {OracleLib} from "../lib/OracleLib.sol";
+import {OracleLib} from "../src/libraries/OracleLib.sol";
 
 /**
  * @title DSCEngine
