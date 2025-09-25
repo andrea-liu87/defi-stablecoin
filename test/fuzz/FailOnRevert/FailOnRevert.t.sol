@@ -6,6 +6,7 @@ import {Test, console} from "../../../lib/forge-std/src/Test.sol";
 import {DSCEngine} from "../../../src/DSCEngine.sol";
 import {DecentralizedStablecoin} from "../../../src/DecentralizedStablecoin.sol";
 import {ERC20Mock} from "../../../test/mocks/ERC20Mock.sol";
+import {MockV3Aggregator} from "../../mocks/MockV3Aggregator.sol";
 
 contract FailOnRevert is Test {
     DecentralizedStablecoin dsc;
@@ -13,6 +14,8 @@ contract FailOnRevert is Test {
 
     address weth;
     address wbtc;
+
+    MockV3Aggregator ethUsdPricefeed;
 
     uint256 public constant MAX_COLLATERAL_AMOUNT = type(uint96).max;
 
@@ -23,6 +26,8 @@ contract FailOnRevert is Test {
         address[] memory collateralToken = dsce.getCollateralToken();
         weth = collateralToken[0];
         wbtc = collateralToken[1];
+
+        ethUsdPricefeed = MockV3Aggregator(dsce.getCollateralTokenPricefeed(weth));
     }
 
     function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
@@ -70,6 +75,12 @@ contract FailOnRevert is Test {
         dsce.mintDsc(mintAmount);
         vm.stopPrank();
     }
+
+    // THIS BREAKS OUR INVARIANT TEST SUITE!!!
+    // function updatePriceFeed(uint96 newPrice) public {
+    //     int256 newPrice = (int256(uint256(newPrice)));
+    //     ethUsdPricefeed.updateAnswer(newPrice);
+    // }
 
     ///////////////////////////
     /// PRIVATE FUNCTION /////

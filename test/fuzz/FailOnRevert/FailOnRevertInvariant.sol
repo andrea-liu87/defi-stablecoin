@@ -50,4 +50,13 @@ contract OpenInvariantTest is StdInvariant, Test {
 
         assert((totalwbtcValueInUSD + totalwethValueInUSD) >= totalDSCValue);
     }
+
+    function invariant_testGetterMustNeverRevert() public {
+        dscengine.getAdditionalFeedPrecision();
+        dscengine.getCollateralToken();
+        dscengine.getLiquidationBonus();
+        dscengine.getLiquidationThreshold();
+        dscengine.getMinHealthFactor();
+        dscengine.getPrecision();
+    }
 }
