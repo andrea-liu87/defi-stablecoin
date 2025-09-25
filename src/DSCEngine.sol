@@ -29,6 +29,7 @@ import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
 import {AggregatorV3Interface} from
     "chainlink-brownie-contracts/contracts/src/v0.8/shared/interfaces/AggregatorV3Interface.sol";
 import {console} from "../lib/forge-std/src/console.sol";
+import {OracleLib} from "../lib/OracleLib.sol";
 
 /**
  * @title DSCEngine
@@ -63,6 +64,10 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__MintingIsFailed();
     error DSCEngine_HealthFactorOkay();
     error DSCEngine_HealthFactorNotImproving();
+
+    /// TYPES /////
+    ///////////////
+    using OracleLib for AggregatorV3Interface;
 
     mapping(address tokenAddresses => address priceFeed) private s_tokenAllowedForCollateral;
     DecentralizedStablecoin private i_dsc;
@@ -296,8 +301,8 @@ contract DSCEngine is ReentrancyGuard {
     ////////////////////////////////////////
     /// Public & External View Function ////////
     ///////////////////////////////////////
-    function getTokenAmountFromUSD(address token, uint256 amount) public view returns (uint256) {
-        (, int256 priceFeed,,,) = AggregatorV3Interface(s_tokenAllowedForCollateral[token]).latestRoundData();
+    function getTokenAmountFromUSD(address token, uint256 amount) public returns (uint256) {
+        (, int256 priceFeed,,,) = AggregatorV3Interface(s_tokenAllowedForCollateral[token]).checkStaleLatestRoundData();
         return amount / (uint256(priceFeed) * ADDITIONAL_FEED_PRECISION) * PRECISION;
     }
 
@@ -311,7 +316,7 @@ contract DSCEngine is ReentrancyGuard {
     }
 
     function getUSDValue(address token, uint256 amount) public view returns (uint256) {
-        (, int256 priceFeed,,,) = AggregatorV3Interface(s_tokenAllowedForCollateral[token]).latestRoundData();
+        (, int256 priceFeed,,,) = AggregatorV3Interface(s_tokenAllowedForCollateral[token]).checkStaleLatestRoundData();
         return (uint256(priceFeed) * amount * ADDITIONAL_FEED_PRECISION) / PRECISION;
     }
 
