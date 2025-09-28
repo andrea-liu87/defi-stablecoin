@@ -65,6 +65,7 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine_HealthFactorOkay();
     error DSCEngine_HealthFactorNotImproving();
 
+    ///////////////
     /// TYPES /////
     ///////////////
     using OracleLib for AggregatorV3Interface;
