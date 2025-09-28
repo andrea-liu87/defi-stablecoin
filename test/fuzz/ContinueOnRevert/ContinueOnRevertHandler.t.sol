@@ -7,7 +7,7 @@ import {DSCEngine} from "../../../src/DSCEngine.sol";
 import {DecentralizedStablecoin} from "../../../src/DecentralizedStablecoin.sol";
 import {ERC20Mock} from "../../../test/mocks/ERC20Mock.sol";
 
-contract ContinueOnRevert is Test {
+contract ContinueOnRevertHandler is Test {
     DecentralizedStablecoin dsc;
     DSCEngine dsce;
 
@@ -52,6 +52,17 @@ contract ContinueOnRevert is Test {
         mintAmount = bound(mintAmount, 0, MAX_COLLATERAL_AMOUNT);
         vm.prank(msg.sender);
         dsce.mintDsc(mintAmount);
+    }
+
+    function burnDsc(uint256 burnAmount) public {
+        burnAmount = bound(burnAmount, 0, dsc.balanceOf(msg.sender));
+        dsce.burnDsc(burnAmount);
+    }
+
+    function liquadateDsc(uint256 collateralSeed, address liquidationAddress, uint256 liquidationAmount) public {
+        address collateralToken = _getCollateralToken(collateralSeed);
+        liquidationAmount = bound(liquidationAmount, 0, dsc.balanceOf(liquidationAddress));
+        dsce.liquidate(collateralToken, liquidationAddress, liquidationAmount);
     }
 
     ///////////////////////////

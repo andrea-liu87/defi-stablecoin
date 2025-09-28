@@ -8,7 +8,7 @@ import {DecentralizedStablecoin} from "../../../src/DecentralizedStablecoin.sol"
 import {ERC20Mock} from "../../../test/mocks/ERC20Mock.sol";
 import {MockV3Aggregator} from "../../mocks/MockV3Aggregator.sol";
 
-contract FailOnRevert is Test {
+contract StopOnRevertHandler is Test {
     DecentralizedStablecoin dsc;
     DSCEngine dsce;
 
@@ -74,6 +74,28 @@ contract FailOnRevert is Test {
         }
         dsce.mintDsc(mintAmount);
         vm.stopPrank();
+    }
+
+    function burnDsc(uint256 burnAmount) public {
+        burnAmount = bound(burnAmount, 0, dsc.balanceOf(msg.sender));
+        if (burnAmount == 0) {
+            return;
+        }
+        vm.startPrank(msg.sender);
+        dsc.approve(address(dsce), burnAmount);
+        dsce.burnDsc(burnAmount);
+        vm.stopPrank();
+    }
+
+    function liquidateDsc(uint256 collateralSeed, address liquidationAddress, uint256 debtToCover) public {
+        // address collateralToken = _getCollateralToken(collateralSeed);
+        // debtToCover = bound(debtToCover, 0, dsc.balanceOf(liquidationAddress));
+        // if(debtToCover == 0){
+        //     return;
+        // }
+        // vm.startPrank(msg.sender);
+        // dsce.liquidate(collateralToken, liquidationAddress, debtToCover);
+        // vm.stopPrank();
     }
 
     // THIS BREAKS OUR INVARIANT TEST SUITE!!!

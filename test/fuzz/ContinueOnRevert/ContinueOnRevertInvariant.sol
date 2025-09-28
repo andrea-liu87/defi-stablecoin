@@ -13,7 +13,7 @@ import {DecentralizedStablecoin} from "../../../src/DecentralizedStablecoin.sol"
 import {DSCEngine} from "../../../src/DSCEngine.sol";
 import {HelperConfig} from "../../../script/HelperConfig.s.sol";
 import {IERC20} from "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
-import {ContinueOnRevert} from "../../fuzz/ContinueOnRevert/ContinueOnRevert.t.sol";
+import {ContinueOnRevertHandler} from "../../fuzz/ContinueOnRevert/ContinueOnRevertHandler.t.sol";
 
 contract OpenInvariantTest is StdInvariant, Test {
     DeployDecentralizedStablecoin deployer;
@@ -31,7 +31,7 @@ contract OpenInvariantTest is StdInvariant, Test {
         (dsc, dscengine, config) = deployer.run();
 
         (btcUsdPriceFeed, ethUsdPriceFeed, wbtc, weth,) = config.activeNetworkConfig();
-        ContinueOnRevert handler = new ContinueOnRevert(dsc, dscengine);
+        ContinueOnRevertHandler handler = new ContinueOnRevertHandler(dsc, dscengine);
         targetContract(address(handler));
     }
 
